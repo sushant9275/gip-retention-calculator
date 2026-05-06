@@ -226,6 +226,7 @@ function calculate(inputs) {
       incomePeriod: 0,
     };
   }
+}
 
 // ─── UI Helpers ───────────────────────────────────────────────────────────────
 const fmt = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
