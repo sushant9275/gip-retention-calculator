@@ -178,59 +178,54 @@ function calculate(inputs) {
   const premiumsStillDue = Math.max(0, ppt - yearsSurrender) * ap;
 
   if (planOption === "flexi") {
-    // Remaining Secured Income during PPT
     const siStartYear = deferment + 1;
-    const siEndYear = ppt; // runs till end of PPT
+    const siEndYear = ppt;
     const remainingSIYears = Math.max(0, siEndYear - Math.max(yearsSurrender, siStartYear - 1));
     const remainingSI = remainingSIYears * annualSI;
 
-    // Guaranteed Income during income period
     const giRate = getGuaranteedIncomeRate(ppt, deferment, incomePeriod);
     const annualGI = ap * giRate;
     const totalGI = annualGI * incomePeriod;
 
-    // RoP
-    const ropValue = ropChosen ? totalPremiumsPaid * 1.1 : 0;
+    const fullPremiums = ppt * ap;
+    const ropValue = ropChosen ? fullPremiums * 1.1 : 0;
 
     futureIncome = remainingSI + totalGI;
     maturityBenefitTotal = ropValue;
     totalBenefitIfStay = futureIncome + maturityBenefitTotal;
+
+    return {
+      totalPremiumsPaid, gsv, ssv, surrenderValue, svType, deathBenefit,
+      annualSI, siPaidTotal, futureIncome, maturityBenefitTotal, totalBenefitIfStay,
+      lossIfSurrender: totalBenefitIfStay - surrenderValue,
+      premiumsStillDue, recoveryPct: totalPremiumsPaid > 0 ? (surrenderValue/totalPremiumsPaid)*100 : 0,
+      gsvFactor: gsvFactor * 100,
+      // Flexi-specific breakdown
+      remainingSI,
+      totalGI,
+      annualGI,
+      incomePeriod,
+    };
   } else {
-    // Remaining Secured Income (Extended Benefit)
     const remainingSIYears = Math.max(0, effectivePT - yearsSurrender);
     const remainingSI = remainingSIYears * annualSI;
-
-    // Maturity: 100% of all premiums paid
-    const fullPremiumsPaid = ppt * ap;
-    maturityBenefitTotal = fullPremiumsPaid;
-
+    const fullPremiums = ppt * ap;
+    maturityBenefitTotal = fullPremiums;
     futureIncome = remainingSI;
     totalBenefitIfStay = futureIncome + maturityBenefitTotal;
+
+    return {
+      totalPremiumsPaid, gsv, ssv, surrenderValue, svType, deathBenefit,
+      annualSI, siPaidTotal, futureIncome, maturityBenefitTotal, totalBenefitIfStay,
+      lossIfSurrender: totalBenefitIfStay - surrenderValue,
+      premiumsStillDue, recoveryPct: totalPremiumsPaid > 0 ? (surrenderValue/totalPremiumsPaid)*100 : 0,
+      gsvFactor: gsvFactor * 100,
+      remainingSI,
+      totalGI: 0,
+      annualGI: 0,
+      incomePeriod: 0,
+    };
   }
-
-  const lossIfSurrender = totalBenefitIfStay - surrenderValue;
-
-  // Recovery %
-  const recoveryPct = totalPremiumsPaid > 0 ? (surrenderValue / totalPremiumsPaid) * 100 : 0;
-
-  return {
-    totalPremiumsPaid,
-    gsv,
-    ssv,
-    surrenderValue,
-    svType,
-    deathBenefit,
-    annualSI,
-    siPaidTotal,
-    futureIncome,
-    maturityBenefitTotal,
-    totalBenefitIfStay,
-    lossIfSurrender,
-    premiumsStillDue,
-    recoveryPct,
-    gsvFactor: gsvFactor * 100,
-  };
-}
 
 // ─── UI Helpers ───────────────────────────────────────────────────────────────
 const fmt = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
@@ -746,13 +741,56 @@ export default function GIPRetentionCalculator() {
           </div>
 
           <InfoRow label="Your yearly income from this policy" value={fmt(result.annualSI) + " / year"} />
-          <InfoRow label={futureLabel} value={fmt(result.futureIncome)} highlight="green" />
-          {planOption === "flexi" && ropChosen && (
-            <InfoRow label="Your premiums back + 10% bonus (at end)" value={fmt(result.maturityBenefitTotal)} highlight="green" />
-          )}
-          {planOption === "extended" && (
-            <InfoRow label="All your premiums returned at the end" value={fmt(result.maturityBenefitTotal)} highlight="green" />
-          )}
+
+          {planOption === "flexi" ? (<>
+            {/* Flexi Start: SI and GI shown separately */}
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Income during policy term (Secured Income)
+            </div>
+            <InfoRow
+              label={`₹${Math.round(result.annualSI).toLocaleString("en-IN")}/yr × remaining years in policy`}
+              value={fmt(result.remainingSI)}
+              highlight="green"
+            />
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Income after policy matures (Guaranteed Income)
+            </div>
+            <InfoRow
+              label={`₹${Math.round(result.annualGI).toLocaleString("en-IN")}/yr × ${result.incomePeriod} years`}
+              value={fmt(result.totalGI)}
+              highlight="green"
+            />
+            {ropChosen && (
+              <>
+                <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+                  Lump sum at end of income period (Return of Premium)
+                </div>
+                <InfoRow
+                  label={`${ppt} yrs × ${fmt(ap)} + 10% loyalty bonus`}
+                  value={fmt(result.maturityBenefitTotal)}
+                  highlight="green"
+                />
+              </>
+            )}
+          </>) : (<>
+            {/* Extended Benefit: SI only + maturity lump sum */}
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Remaining income (Secured Income)
+            </div>
+            <InfoRow
+              label={`₹${Math.round(result.annualSI).toLocaleString("en-IN")}/yr × remaining years in policy`}
+              value={fmt(result.remainingSI)}
+              highlight="green"
+            />
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Lump sum at end of policy (Maturity Benefit)
+            </div>
+            <InfoRow
+              label={`100% of all premiums paid back (${ppt} yrs × ${fmt(ap)})`}
+              value={fmt(result.maturityBenefitTotal)}
+              highlight="green"
+            />
+          </>)}
           {result.premiumsStillDue > 0 && (
             <div style={{
               marginTop:12, padding:"10px 14px",
@@ -792,9 +830,46 @@ export default function GIPRetentionCalculator() {
             <div style={{fontSize:12,color:C.greenDark,marginTop:2}}>All amounts are guaranteed — not linked to markets</div>
           </div>
           <InfoRow label="Total you'll pay over the full term" value={fmt(ppt * ap)} />
-          <InfoRow label="Regular income you'd still receive" value={fmt(result.futureIncome)} highlight="green" />
-          {planOption==="flexi" && ropChosen && <InfoRow label="Premiums back + 10% bonus at the end" value={fmt(result.maturityBenefitTotal)} highlight="green" />}
-          {planOption==="extended" && <InfoRow label="All premiums returned at the end" value={fmt(result.maturityBenefitTotal)} highlight="green" />}
+
+          {planOption === "flexi" ? (<>
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Secured Income (during policy term)
+            </div>
+            <InfoRow
+              label={`${fmt(result.annualSI)}/yr × ${ppt} years`}
+              value={fmt(result.annualSI * ppt)}
+              highlight="green"
+            />
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Guaranteed Income (after policy matures)
+            </div>
+            <InfoRow
+              label={`${fmt(result.annualGI)}/yr × ${result.incomePeriod} years`}
+              value={fmt(result.totalGI)}
+              highlight="green"
+            />
+            {ropChosen && (
+              <>
+                <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+                  Return of Premium + Loyalty (end of income period)
+                </div>
+                <InfoRow label={`${ppt} yrs × ${fmt(ap)} + 10% bonus`} value={fmt(result.maturityBenefitTotal)} highlight="green" />
+              </>
+            )}
+          </>) : (<>
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Secured Income (throughout policy term)
+            </div>
+            <InfoRow
+              label={`${fmt(result.annualSI)}/yr × ${pt} years`}
+              value={fmt(result.annualSI * pt)}
+              highlight="green"
+            />
+            <div style={{margin:"8px 0 4px", fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.06em"}}>
+              Maturity Benefit (end of policy)
+            </div>
+            <InfoRow label={`100% of all premiums back`} value={fmt(result.maturityBenefitTotal)} highlight="green" />
+          </>)}
 
           <div style={{
             marginTop:14, padding:"12px 16px",
