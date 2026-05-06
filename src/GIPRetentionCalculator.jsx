@@ -292,13 +292,13 @@ function ProgressBar({ value, max, color }) {
 // ─── Input Component ──────────────────────────────────────────────────────────
 function Select({ label, value, onChange, options }) {
   return (
-    <div style={{display:"flex", flexDirection:"column", gap:4}}>
-      <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em"}}>{label}</label>
+    <div style={{display:"flex", flexDirection:"column", gap:4, textAlign:"left"}}>
+      <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em", textAlign:"left", lineHeight:1.4, display:"block"}}>{label}</label>
       <select value={value} onChange={e => onChange(e.target.value)}
         style={{
           padding:"9px 12px", borderRadius:8, fontSize:14, fontWeight:500,
           border:`1.5px solid ${C.grey200}`, background:C.white, color:C.navy,
-          cursor:"pointer", outline:"none",
+          cursor:"pointer", outline:"none", textAlign:"left", lineHeight:1.4,
         }}
       >
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -309,8 +309,8 @@ function Select({ label, value, onChange, options }) {
 
 function NumberInput({ label, value, onChange, min, max, prefix }) {
   return (
-    <div style={{display:"flex", flexDirection:"column", gap:4}}>
-      <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em"}}>{label}</label>
+    <div style={{display:"flex", flexDirection:"column", gap:4, textAlign:"left"}}>
+      <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em", textAlign:"left", lineHeight:1.4, display:"block"}}>{label}</label>
       <div style={{position:"relative"}}>
         {prefix && <span style={{
           position:"absolute", left:10, top:"50%", transform:"translateY(-50%)",
@@ -320,10 +320,10 @@ function NumberInput({ label, value, onChange, min, max, prefix }) {
           onChange={e => onChange(Number(e.target.value))}
           style={{
             width:"100%", padding:`9px 12px`, paddingLeft: prefix ? 22 : 12,
-            borderRadius:8, fontSize:14, fontWeight:500,
+            borderRadius:8, fontSize:14, fontWeight:500, lineHeight:1.4,
             border:`1.5px solid ${C.grey200}`, color:C.navy,
             background:C.white, WebkitTextFillColor:C.navy,
-            outline:"none", boxSizing:"border-box",
+            outline:"none", boxSizing:"border-box", textAlign:"left",
           }}
         />
       </div>
@@ -333,6 +333,16 @@ function NumberInput({ label, value, onChange, min, max, prefix }) {
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function GIPRetentionCalculator() {
+  // Inject Montserrat font — needed for Edge/non-Chrome browsers
+  useEffect(() => {
+    if (!document.getElementById("montserrat-font")) {
+      const link = document.createElement("link");
+      link.id = "montserrat-font";
+      link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap";
+      document.head.appendChild(link);
+    }
+  }, []);
   const [planOption, setPlanOption] = useState("flexi");
   const [ap, setAp] = useState(100000);
   const [ppt, setPpt] = useState(10);
@@ -439,9 +449,14 @@ export default function GIPRetentionCalculator() {
                 </g>
               </g>
             </svg>
-            <div style={{borderLeft:`1px solid rgba(255,255,255,0.25)`, paddingLeft:14}}>
-              <h1 style={{margin:0, fontSize:22, fontWeight:800, fontFamily:"'Montserrat', sans-serif", letterSpacing:"-0.02em"}}>GIP Retention Calculator</h1>
-              <p style={{margin:"2px 0 0", opacity:0.65, fontSize:12}}>Guaranteed Income Plan</p>
+            <div style={{borderLeft:`1px solid rgba(255,255,255,0.25)`, paddingLeft:14, display:"flex", flexDirection:"column", gap:2}}>
+              <h1 style={{
+                margin:0, fontSize:22, fontWeight:800,
+                fontFamily:"'Montserrat', 'Segoe UI', sans-serif",
+                letterSpacing:"-0.02em",
+                color:"#FFFFFF",
+              }}>GIP Retention Calculator</h1>
+              <p style={{margin:0, opacity:0.65, fontSize:12, color:"#FFFFFF", fontFamily:"'DM Sans', 'Segoe UI', sans-serif"}}>Guaranteed Income Plan</p>
             </div>
           </div>
           <p style={{margin:"10px 0 0", opacity:0.8, fontSize:13, lineHeight:1.5}}>
