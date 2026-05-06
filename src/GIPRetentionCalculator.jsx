@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 // ─── Brand Colors ────────────────────────────────────────────────────────────
 const C = {
@@ -380,7 +380,7 @@ export default function GIPRetentionCalculator() {
     }}>
       {/* Header */}
       <div style={{
-        background: `linear-gradient(135deg, ${C.navy} 0%, ${C.navyLight} 100%)`,
+        background: `linear-gradient(135deg, #8B1818 0%, #0A3152 60%, #1A5276 100%)`,
         padding:"28px 24px 24px",
         color:C.white,
       }}>
@@ -440,12 +440,12 @@ export default function GIPRetentionCalculator() {
               </g>
             </svg>
             <div style={{borderLeft:`1px solid rgba(255,255,255,0.25)`, paddingLeft:14}}>
-              <h1 style={{margin:0, fontSize:20, fontWeight:700}}>GIP Retention Calculator</h1>
+              <h1 style={{margin:0, fontSize:22, fontWeight:800, fontFamily:"'Montserrat', sans-serif", letterSpacing:"-0.02em"}}>GIP Retention Calculator</h1>
               <p style={{margin:"2px 0 0", opacity:0.65, fontSize:12}}>Guaranteed Income Plan</p>
             </div>
           </div>
-          <p style={{margin:"8px 0 0", opacity:0.75, fontSize:13, lineHeight:1.5}}>
-            Show your customer exactly what they lose by surrendering — and what they gain by staying.
+          <p style={{margin:"10px 0 0", opacity:0.8, fontSize:13, lineHeight:1.5}}>
+            See exactly how much you stand to lose if you exit your policy today — vs. what you gain by staying.
           </p>
         </div>
       </div>
@@ -459,7 +459,7 @@ export default function GIPRetentionCalculator() {
           }}>
             {/* Plan Option */}
             <div style={{gridColumn:"1/-1"}}>
-              <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6}}>Plan Option</label>
+              <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6}}>Which plan are you on?</label>
               <div style={{display:"flex", gap:10}}>
                 {[["flexi","Flexi Start"],["extended","Extended Benefit"]].map(([v,l]) => (
                   <button key={v} onClick={() => setPlanOption(v)} style={{
@@ -474,26 +474,26 @@ export default function GIPRetentionCalculator() {
               </div>
             </div>
 
-            <NumberInput label="Annual Premium (₹)" value={ap} onChange={setAp} min={30000} prefix="₹" />
-            <Select label="Premium Payment Term" value={ppt} onChange={v=>setPpt(Number(v))}
+            <NumberInput label="How much do you pay per year? (₹)" value={ap} onChange={setAp} min={30000} prefix="₹" />
+            <Select label="For how many years do you pay?" value={ppt} onChange={v=>setPpt(Number(v))}
               options={planOption==="flexi" ? flexiPPTOptions : extPPTOptions} />
 
             {planOption === "extended" && (
-              <Select label="Policy Term" value={pt} onChange={v=>setPt(Number(v))} options={extPTOptions} />
+              <Select label="Policy Term (Total duration)" value={pt} onChange={v=>setPt(Number(v))} options={extPTOptions} />
             )}
 
             {planOption === "flexi" && (
               <>
-                <Select label="Income Period (Post-Maturity)" value={incomePeriod} onChange={v=>setIncomePeriod(Number(v))}
+                <Select label="How long do you want income after maturity?" value={incomePeriod} onChange={v=>setIncomePeriod(Number(v))}
                   options={[10,15,20,25,30].map(v=>({value:v,label:`${v} years`}))} />
-                <Select label="Deferment Year" value={deferment} onChange={v=>setDeferment(Number(v))}
-                  options={[...Array(maxDeferment+1)].map((_,i)=>({value:i,label:i===0?"No Deferment":`Year ${i}`}))} />
+                <Select label="Did you delay your income start? (Deferment)" value={deferment} onChange={v=>setDeferment(Number(v))}
+                  options={[...Array(maxDeferment+1)].map((_,i)=>({value:i,label:i===0?"No — income starts Year 1":`Yes — income starts Year ${i+1}`}))} />
               </>
             )}
 
             <div style={{display:"flex", flexDirection:"column", gap:4}}>
               <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em"}}>
-                Year of Surrender (1–{maxSurrenderYear-1})
+                Which year are you thinking of exiting? (1–{maxSurrenderYear-1})
               </label>
               <input type="range" min={1} max={maxSurrenderYear-1} value={safeYears}
                 onChange={e=>setYearsSurrender(Number(e.target.value))}
@@ -501,7 +501,7 @@ export default function GIPRetentionCalculator() {
               />
               <div style={{display:"flex",justifyContent:"space-between"}}>
                 <span style={{fontSize:12,color:C.grey400}}>Year 1</span>
-                <span style={{fontSize:14,fontWeight:700,color:C.navy}}>Surrendering at end of Year {safeYears}</span>
+                <span style={{fontSize:14,fontWeight:700,color:C.navy}}>Exiting at end of Year {safeYears}</span>
                 <span style={{fontSize:12,color:C.grey400}}>Year {maxSurrenderYear-1}</span>
               </div>
             </div>
@@ -511,7 +511,7 @@ export default function GIPRetentionCalculator() {
                 <input type="checkbox" id="rop" checked={ropChosen} onChange={e=>setRopChosen(e.target.checked)}
                   style={{width:16,height:16,accentColor:C.navy,cursor:"pointer"}} />
                 <label htmlFor="rop" style={{fontSize:13,fontWeight:600,color:C.navy,cursor:"pointer"}}>
-                  Return of Premium (RoP) chosen at inception?
+                  Did you opt for Premiums Back (RoP) at the start?
                 </label>
               </div>
             )}
@@ -524,15 +524,15 @@ export default function GIPRetentionCalculator() {
           borderRadius:14, padding:"22px 22px", marginTop:16, color:C.white,
         }}>
           <div style={{fontSize:12, opacity:0.65, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:16}}>
-            If surrendered today (End of Year {safeYears})
+            If you exit at end of Year {safeYears}
           </div>
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:20}}>
             <div>
-              <div style={{fontSize:12,opacity:0.65,marginBottom:4}}>Total Premiums Paid</div>
+              <div style={{fontSize:12,opacity:0.65,marginBottom:4}}>Total you've paid so far</div>
               <div style={{fontSize:22,fontWeight:800}}>{fmt(result.totalPremiumsPaid)}</div>
             </div>
             <div>
-              <div style={{fontSize:12,opacity:0.65,marginBottom:4}}>You Receive ({result.svType})</div>
+              <div style={{fontSize:12,opacity:0.65,marginBottom:4}}>You'd get back ({result.svType})</div>
               <div style={{fontSize:22,fontWeight:800,color:"#7EE8C0"}}>{fmt(result.surrenderValue)}</div>
             </div>
           </div>
@@ -540,9 +540,9 @@ export default function GIPRetentionCalculator() {
           {/* Recovery bar */}
           <div style={{marginTop:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-              <span style={{fontSize:12,opacity:0.65}}>Capital Recovery</span>
+              <span style={{fontSize:12,opacity:0.65}}>How much of your money comes back</span>
               <span style={{fontSize:14,fontWeight:700,color: result.recoveryPct >= 100 ? "#7EE8C0" : "#F5A623"}}>
-                {pct(result.recoveryPct)} recovered
+                {pct(result.recoveryPct)}
               </span>
             </div>
             <div style={{background:"rgba(255,255,255,0.15)",borderRadius:99,height:8}}>
@@ -555,35 +555,35 @@ export default function GIPRetentionCalculator() {
           </div>
 
           <div style={{marginTop:12, padding:"10px 14px", background:"rgba(255,255,255,0.08)", borderRadius:8, fontSize:12, display:"flex",justifyContent:"space-between"}}>
-            <span style={{opacity:0.75}}>GSV: {fmt(result.gsv)} ({pct(result.gsvFactor)} of premiums)</span>
-            <span style={{opacity:0.75}}>SSV: {fmt(result.ssv)}</span>
+            <span style={{opacity:0.75}}>Min guaranteed: {fmt(result.gsv)}</span>
+            <span style={{opacity:0.75}}>Estimated value: {fmt(result.ssv)}</span>
           </div>
           <div style={{marginTop:8, fontSize:12, opacity:0.55, textAlign:"center"}}>
-            Surrender Value = Max(GSV, SSV). Secured Income already paid: {fmt(result.siPaidTotal)}
+            You receive whichever is higher · Income already paid out: {fmt(result.siPaidTotal)}
           </div>
         </div>
 
         {/* ── WHAT YOU GIVE UP ─────────────────────────────────────── */}
         <Card style={{marginTop:16, border:`2px solid ${C.redBg}`}}>
-          <CardTitle icon="🚨" label="What You Permanently Give Up" color={C.red} />
+          <CardTitle icon="🚨" label="What You're Walking Away From" color={C.red} />
 
           <div style={{
             background: C.redBg, borderRadius:10, padding:"14px 16px", marginBottom:16,
           }}>
             <div style={{fontSize:12,color:C.redDark,fontWeight:600,marginBottom:6}}>
-              TOTAL BENEFITS FOREGONE
+              MONEY YOU WILL NEVER GET BACK
             </div>
             <div style={{fontSize:26,fontWeight:800,color:C.red}}>{fmt(result.lossIfSurrender)}</div>
             <div style={{fontSize:12,color:C.redDark,marginTop:4}}>
-              This is what you lose above what you get back today
+              This is the gap between what you'd get today vs. what you'd receive if you stay
             </div>
           </div>
 
           {/* Visual comparison bar */}
           <div style={{marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-              <span style={{fontSize:12,color:C.grey600,fontWeight:600}}>Surrender Value</span>
-              <span style={{fontSize:12,color:C.grey600,fontWeight:600}}>Total If Stay</span>
+              <span style={{fontSize:12,color:C.grey600,fontWeight:600}}>Exit today</span>
+              <span style={{fontSize:12,color:C.grey600,fontWeight:600}}>Stay till end</span>
             </div>
             <div style={{background:C.grey100,borderRadius:99,height:16,position:"relative",overflow:"hidden"}}>
               <div style={{
@@ -601,13 +601,13 @@ export default function GIPRetentionCalculator() {
             </div>
           </div>
 
-          <InfoRow label={`Annual Secured Income (${planOption==="flexi"?"Flexi Start":"Extended Benefit"})`} value={fmt(result.annualSI) + " / year"} />
+          <InfoRow label="Your yearly income from this policy" value={fmt(result.annualSI) + " / year"} />
           <InfoRow label={futureLabel} value={fmt(result.futureIncome)} highlight="green" />
           {planOption === "flexi" && ropChosen && (
-            <InfoRow label={`Return of Premium at end of Income Period (+ 10% Loyalty)`} value={fmt(result.maturityBenefitTotal)} highlight="green" />
+            <InfoRow label="Your premiums back + 10% bonus (at end)" value={fmt(result.maturityBenefitTotal)} highlight="green" />
           )}
           {planOption === "extended" && (
-            <InfoRow label="Maturity Benefit (100% Premiums Back)" value={fmt(result.maturityBenefitTotal)} highlight="green" />
+            <InfoRow label="All your premiums returned at the end" value={fmt(result.maturityBenefitTotal)} highlight="green" />
           )}
           {result.premiumsStillDue > 0 && (
             <div style={{
@@ -615,108 +615,100 @@ export default function GIPRetentionCalculator() {
               background:C.amberBg, borderRadius:8,
               fontSize:13, color:C.amberDark,
             }}>
-              ⚠️ <strong>{fmt(result.premiumsStillDue)}</strong> in premiums still to pay — but you'd earn far more by completing them.
+              ⚠️ You still have <strong>{fmt(result.premiumsStillDue)}</strong> left to pay — but the returns far outweigh the cost of staying.
             </div>
           )}
         </Card>
 
-        {/* ── LIFE COVER LOST ──────────────────────────────────────── */}
         <Card style={{marginTop:16}}>
-          <CardTitle icon="🛡️" label="Life Cover Lost" color={C.navy} />
+          <CardTitle icon="🛡️" label="Your Family's Protection — Gone Too" color={C.navy} />
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
             <div style={{background:C.navyPale,borderRadius:10,padding:"14px 16px",textAlign:"center"}}>
-              <div style={{fontSize:12,color:C.grey600,marginBottom:4}}>Current Death Benefit</div>
+              <div style={{fontSize:12,color:C.grey600,marginBottom:4}}>Your family gets today if something happens to you</div>
               <div style={{fontSize:20,fontWeight:800,color:C.navy}}>{fmt(result.deathBenefit)}</div>
             </div>
             <div style={{background:C.redBg,borderRadius:10,padding:"14px 16px",textAlign:"center"}}>
-              <div style={{fontSize:12,color:C.redDark,marginBottom:4}}>After Surrender</div>
+              <div style={{fontSize:12,color:C.redDark,marginBottom:4}}>If you exit, they get</div>
               <div style={{fontSize:20,fontWeight:800,color:C.red}}>₹0</div>
             </div>
           </div>
           <p style={{fontSize:12,color:C.grey400,marginTop:12,marginBottom:0,lineHeight:1.6}}>
-            {planOption==="flexi"
-              ? "Life cover is active throughout the policy term. Surrendering means your family loses this protection immediately."
-              : "Life cover is active throughout the entire policy term. Surrendering means your family loses this protection immediately."}
+            The moment you exit, your life cover disappears. Your family would no longer be protected.
           </p>
         </Card>
 
         {/* ── TOTAL VALUE SCORECARD ─────────────────────────────────── */}
         <Card style={{marginTop:16}}>
-          <CardTitle icon="📈" label="Full Picture: Stay vs. Surrender" color={C.green} />
+          <CardTitle icon="📈" label="The Full Picture: Stay vs. Exit" color={C.green} />
           <div style={{
             background: C.greenBg, borderRadius:10, padding:"14px 16px", marginBottom:14,
           }}>
-            <div style={{fontSize:12,color:C.greenDark,fontWeight:600,marginBottom:4}}>TOTAL GUARANTEED VALUE IF YOU STAY</div>
+            <div style={{fontSize:12,color:C.greenDark,fontWeight:600,marginBottom:4}}>TOTAL YOU RECEIVE IF YOU STAY</div>
             <div style={{fontSize:26,fontWeight:800,color:C.green}}>{fmt(result.totalBenefitIfStay)}</div>
-            <div style={{fontSize:12,color:C.greenDark,marginTop:2}}>All benefits guaranteed — no market risk</div>
+            <div style={{fontSize:12,color:C.greenDark,marginTop:2}}>All amounts are guaranteed — not linked to markets</div>
           </div>
-          <InfoRow label="Premiums Invested" value={fmt(ppt * ap)} />
-          <InfoRow label="Future Secured Income (remaining)" value={fmt(result.futureIncome)} highlight="green" />
-          {planOption==="flexi" && <InfoRow label={`Guaranteed Income (${incomePeriod} years)`} value="Included above" />}
-          {planOption==="flexi" && ropChosen && <InfoRow label="Return of Premium + 10% Loyalty" value={fmt(result.maturityBenefitTotal)} highlight="green" />}
-          {planOption==="extended" && <InfoRow label="Maturity Benefit" value={fmt(result.maturityBenefitTotal)} highlight="green" />}
+          <InfoRow label="Total you'll pay over the full term" value={fmt(ppt * ap)} />
+          <InfoRow label="Regular income you'd still receive" value={fmt(result.futureIncome)} highlight="green" />
+          {planOption==="flexi" && ropChosen && <InfoRow label="Premiums back + 10% bonus at the end" value={fmt(result.maturityBenefitTotal)} highlight="green" />}
+          {planOption==="extended" && <InfoRow label="All premiums returned at the end" value={fmt(result.maturityBenefitTotal)} highlight="green" />}
 
           <div style={{
             marginTop:14, padding:"12px 16px",
             background: C.navyPale, borderRadius:8,
             display:"flex", justifyContent:"space-between", alignItems:"center",
           }}>
-            <span style={{fontSize:13,fontWeight:600,color:C.navy}}>Surrender today vs. staying — difference</span>
+            <span style={{fontSize:13,fontWeight:600,color:C.navy}}>Exiting today costs you</span>
             <span style={{fontSize:18,fontWeight:800,color:C.red}}>− {fmt(result.lossIfSurrender)}</span>
           </div>
         </Card>
 
         {/* ── ALTERNATIVES TO SURRENDER ────────────────────────────── */}
         <Card style={{marginTop:16}}>
-          <CardTitle icon="💡" label="Alternatives to Surrendering" color={C.amber} />
+          <CardTitle icon="💡" label="Before You Exit, Consider These Options" color={C.amber} />
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
             {[
               {
                 icon:"🏦",
-                title:"Policy Loan",
-                desc:`Borrow up to ${fmt(result.surrenderValue * 0.8)} (80% of surrender value) at ~8.5% p.a. Keep your policy active & your income flowing.`,
+                title:"Take a Loan Against Your Policy",
+                desc:`Need cash urgently? Borrow up to ${fmt(result.surrenderValue * 0.8)} at ~8.5% interest. Your policy stays alive and your income keeps coming.`,
               },
               {
                 icon:"⏸️",
-                title:"Reduced Paid-Up",
-                desc:"Stop paying premiums. Policy continues with proportionally reduced income & life cover — better than surrendering entirely.",
+                title:"Stop Paying, But Keep the Policy",
+                desc:"Can't afford premiums right now? You can stop paying and the policy continues — just with a smaller income and cover. Much better than exiting entirely.",
               },
               {
                 icon:"💰",
-                title:"Income Accumulation",
-                desc:"If you need liquidity, switch to Accumulation mode. Your Secured Income pools up inside the policy and can be withdrawn partially (min ₹2,000) anytime.",
+                title:"Save Your Income Inside the Policy",
+                desc:"Instead of taking your income monthly, let it build up inside the policy. You can withdraw any amount (min ₹2,000) whenever you need it.",
               },
               {
                 icon:"🔄",
-                title:"Premium Offset",
-                desc:"Use your Secured Income payouts to offset premium payments (available after 3 full years). Reduces out-of-pocket cost significantly.",
+                title:"Use Your Income to Pay Premiums",
+                desc:"After 3 years, your policy income can automatically pay your next premium — so your out-of-pocket cost drops significantly.",
               },
               {
                 icon:"⏳",
-                title:"Revival Window",
-                desc:"If you've missed premiums, you have up to 5 years to revive and get full benefits back.",
+                title:"Missed Some Payments? You Can Revive",
+                desc:"If you've skipped premiums, don't exit — you have up to 5 years to pay them back and get all your benefits fully restored.",
               },
             ].map(a => (
               <div key={a.title} style={{
-                display:"flex", gap:12, padding:"12px 14px",
-                background:C.amberBg, borderRadius:10, alignItems:"flex-start",
+                display:"flex", flexDirection:"column", alignItems:"center",
+                gap:6, padding:"14px 16px",
+                background:C.amberBg, borderRadius:10, textAlign:"center",
               }}>
-                <span style={{fontSize:20,lineHeight:1}}>{a.icon}</span>
-                <div>
-                  <div style={{fontWeight:700,fontSize:14,color:C.amberDark,marginBottom:2}}>{a.title}</div>
-                  <div style={{fontSize:12,color:C.grey600,lineHeight:1.5}}>{a.desc}</div>
-                </div>
+                <span style={{fontSize:24,lineHeight:1}}>{a.icon}</span>
+                <div style={{fontWeight:700,fontSize:14,color:C.amberDark}}>{a.title}</div>
+                <div style={{fontSize:12,color:C.grey600,lineHeight:1.5,maxWidth:480}}>{a.desc}</div>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* ── DISCLAIMER ────────────────────────────────────────────── */}
         <div style={{marginTop:20,padding:"14px 16px",background:C.grey100,borderRadius:10}}>
-          <p style={{
-            margin:0, fontSize:11, color:C.grey400, lineHeight:1.7,
-          }}>
-            <strong>Disclaimer:</strong> This calculator is an indicative tool for agent use. Surrender values are based on Guaranteed Surrender Value (GSV) and estimated Special Surrender Value (SSV) from the Bandhan Life GIP policy document (UIN: 138N118V02). Actual surrender values may differ — always refer to the official Benefit Illustration before advising. Income rates are indicative based on plan parameters. Tax benefits are subject to prevailing laws. Bandhan Life Insurance Limited, IRDAI Reg. No. 138.
+          <p style={{margin:0, fontSize:11, color:C.grey400, lineHeight:1.7}}>
+            <strong>Note:</strong> The amounts shown are indicative estimates based on your policy details. Actual values may vary — please refer to your official policy documents or speak with your advisor before making any decision. Bandhan Life Insurance Limited, IRDAI Reg. No. 138 (UIN: 138N118V02).
           </p>
         </div>
 
