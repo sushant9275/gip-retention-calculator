@@ -387,6 +387,8 @@ export default function GIPRetentionCalculator() {
       background: "#F0F4F8",
       minHeight:"100vh",
       padding:"0 0 40px 0",
+      textAlign:"left",
+      lineHeight:1.5,
     }}>
       {/* Header */}
       <div style={{
@@ -467,71 +469,198 @@ export default function GIPRetentionCalculator() {
 
       <div style={{maxWidth:700, margin:"0 auto", padding:"0 16px"}}>
 
-        {/* ── INPUT SECTION ─────────────────────────────────────────── */}
-        <Card style={{marginTop:-12, position:"relative", zIndex:2, borderRadius:"0 0 14px 14px"}}>
-          <div style={{
-            display:"grid", gridTemplateColumns:"1fr 1fr", gap:"14px 16px",
-          }}>
-            {/* Plan Option */}
-            <div style={{gridColumn:"1/-1"}}>
-              <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em", display:"block", marginBottom:6}}>Which plan are you on?</label>
-              <div style={{display:"flex", gap:10}}>
-                {[["flexi","Flexi Start"],["extended","Extended Benefit"]].map(([v,l]) => (
-                  <button key={v} onClick={() => setPlanOption(v)} style={{
-                    flex:1, padding:"9px 0", borderRadius:8, border:`2px solid`,
-                    borderColor: planOption===v ? C.navy : C.grey200,
-                    background: planOption===v ? C.navy : C.white,
-                    color: planOption===v ? C.white : C.grey600,
-                    fontWeight:700, fontSize:13, cursor:"pointer",
-                    transition:"all 0.15s",
+        {/* ── PLAN SELECTOR — full width, prominent ─────────────────── */}
+        <div style={{
+          background:C.white, borderRadius:"0 0 14px 14px",
+          padding:"20px 22px 24px",
+          boxShadow:"0 2px 12px rgba(10,49,82,0.08)",
+          marginTop:-12, position:"relative", zIndex:2,
+        }}>
+          <div style={{fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10, textAlign:"left"}}>
+            Step 1 — Which plan did you take?
+          </div>
+          <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
+            {[
+              ["flexi","Flexi Start","Income during + after the policy term"],
+              ["extended","Extended Benefit","Income throughout + lump sum at the end"],
+            ].map(([v,l,sub]) => (
+              <button key={v} onClick={() => setPlanOption(v)} style={{
+                padding:"14px 16px", borderRadius:10,
+                border:`2px solid ${planOption===v ? C.navy : C.grey200}`,
+                background: planOption===v ? C.navy : C.white,
+                color: planOption===v ? C.white : C.grey600,
+                cursor:"pointer", transition:"all 0.15s",
+                textAlign:"left", display:"flex", flexDirection:"column", gap:3,
+              }}>
+                <span style={{fontWeight:700, fontSize:14, color: planOption===v ? C.white : C.navy}}>{l}</span>
+                <span style={{fontSize:11, opacity: planOption===v ? 0.7 : 0.6, fontWeight:400, lineHeight:1.3}}>{sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── QUESTIONS — single column stacked ─────────────────────── */}
+        <div style={{
+          background:C.white, borderRadius:14,
+          boxShadow:"0 2px 12px rgba(10,49,82,0.08)",
+          marginTop:12, overflow:"hidden",
+        }}>
+          <div style={{padding:"16px 22px 6px", borderBottom:`1px solid ${C.grey100}`}}>
+            <div style={{fontSize:11, fontWeight:700, color:C.grey400, textTransform:"uppercase", letterSpacing:"0.08em", textAlign:"left"}}>
+              Step 2 — Tell us about your policy
+            </div>
+          </div>
+
+          {/* Q1 — Annual Premium */}
+          <div style={{padding:"18px 22px", borderBottom:`1px solid ${C.grey100}`}}>
+            <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+              What is your annual premium?
+            </div>
+            <div style={{fontSize:12, color:C.grey400, marginBottom:10, textAlign:"left"}}>The amount you pay every year</div>
+            <div style={{position:"relative", maxWidth:280}}>
+              <span style={{position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", color:C.grey400, fontSize:14, fontWeight:600}}>₹</span>
+              <input type="number" value={ap} min={30000} step={10000}
+                onChange={e => setAp(Number(e.target.value))}
+                style={{
+                  width:"100%", padding:"10px 12px 10px 26px",
+                  borderRadius:8, fontSize:15, fontWeight:600,
+                  border:`1.5px solid ${C.grey200}`, color:C.navy,
+                  background:C.white, WebkitTextFillColor:C.navy,
+                  outline:"none", boxSizing:"border-box", textAlign:"left", lineHeight:1.4,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Q2 — PPT */}
+          <div style={{padding:"18px 22px", borderBottom:`1px solid ${C.grey100}`}}>
+            <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+              How many years did you choose to pay premiums for?
+            </div>
+            <div style={{fontSize:12, color:C.grey400, marginBottom:10, textAlign:"left"}}>Your premium payment term</div>
+            <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+              {[5,6,7,8,10,12].map(v => (
+                <button key={v} onClick={() => setPpt(v)} style={{
+                  padding:"8px 18px", borderRadius:8,
+                  border:`1.5px solid ${ppt===v ? C.navy : C.grey200}`,
+                  background: ppt===v ? C.navy : C.white,
+                  color: ppt===v ? C.white : C.grey600,
+                  fontWeight:600, fontSize:14, cursor:"pointer",
+                  transition:"all 0.15s", lineHeight:1.4,
+                }}>{v} yrs</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Q3 — Policy Term (Extended only) */}
+          {planOption === "extended" && (
+            <div style={{padding:"18px 22px", borderBottom:`1px solid ${C.grey100}`}}>
+              <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+                What is the total duration of your policy?
+              </div>
+              <div style={{fontSize:12, color:C.grey400, marginBottom:10, textAlign:"left"}}>Your policy term</div>
+              <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+                {(({5:[10,12,15,20,25,30],6:[10,12,15,20,25,30],7:[10,12,15,20,25,30],8:[10,12,15,20,25,30],10:[10,12,15,20,25,30],12:[12,15,20,25,30]})[ppt]||[10,15,20,25,30]).map(v => (
+                  <button key={v} onClick={() => setPt(v)} style={{
+                    padding:"8px 18px", borderRadius:8,
+                    border:`1.5px solid ${pt===v ? C.navy : C.grey200}`,
+                    background: pt===v ? C.navy : C.white,
+                    color: pt===v ? C.white : C.grey600,
+                    fontWeight:600, fontSize:14, cursor:"pointer",
+                    transition:"all 0.15s", lineHeight:1.4,
+                  }}>{v} yrs</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Q4 — Income Period (Flexi only) */}
+          {planOption === "flexi" && (
+            <div style={{padding:"18px 22px", borderBottom:`1px solid ${C.grey100}`}}>
+              <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+                How many years of income did you select after the policy ends?
+              </div>
+              <div style={{fontSize:12, color:C.grey400, marginBottom:10, textAlign:"left"}}>Your post-maturity income period</div>
+              <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+                {[10,15,20,25,30].map(v => (
+                  <button key={v} onClick={() => setIncomePeriod(v)} style={{
+                    padding:"8px 18px", borderRadius:8,
+                    border:`1.5px solid ${incomePeriod===v ? C.navy : C.grey200}`,
+                    background: incomePeriod===v ? C.navy : C.white,
+                    color: incomePeriod===v ? C.white : C.grey600,
+                    fontWeight:600, fontSize:14, cursor:"pointer",
+                    transition:"all 0.15s", lineHeight:1.4,
+                  }}>{v} yrs</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Q5 — Deferment (Flexi only) */}
+          {planOption === "flexi" && (
+            <div style={{padding:"18px 22px", borderBottom:`1px solid ${C.grey100}`}}>
+              <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+                Did you choose to delay when your income starts?
+              </div>
+              <div style={{fontSize:12, color:C.grey400, marginBottom:10, textAlign:"left"}}>Some plans start income from Year 1, others delay it for a higher payout</div>
+              <div style={{display:"flex", gap:8, flexWrap:"wrap"}}>
+                {[...Array(maxDeferment+1)].map((_,i) => (
+                  <button key={i} onClick={() => setDeferment(i)} style={{
+                    padding:"8px 16px", borderRadius:8,
+                    border:`1.5px solid ${deferment===i ? C.navy : C.grey200}`,
+                    background: deferment===i ? C.navy : C.white,
+                    color: deferment===i ? C.white : C.grey600,
+                    fontWeight:600, fontSize:13, cursor:"pointer",
+                    transition:"all 0.15s", lineHeight:1.4,
+                  }}>{i===0 ? "No, starts Year 1" : `Yes, starts Year ${i+1}`}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Q6 — RoP (Flexi only) */}
+          {planOption === "flexi" && (
+            <div style={{padding:"18px 22px", borderBottom:`1px solid ${C.grey100}`}}>
+              <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+                Did you opt to get your premiums back at the end?
+              </div>
+              <div style={{fontSize:12, color:C.grey400, marginBottom:10, textAlign:"left"}}>Return of Premium (RoP) — get back 100% of what you paid + a 10% loyalty bonus</div>
+              <div style={{display:"flex", gap:8}}>
+                {[[true,"Yes, I chose this"],[false,"No, I didn't"]].map(([v,l]) => (
+                  <button key={String(v)} onClick={() => setRopChosen(v)} style={{
+                    padding:"8px 20px", borderRadius:8,
+                    border:`1.5px solid ${ropChosen===v ? C.navy : C.grey200}`,
+                    background: ropChosen===v ? C.navy : C.white,
+                    color: ropChosen===v ? C.white : C.grey600,
+                    fontWeight:600, fontSize:13, cursor:"pointer",
+                    transition:"all 0.15s", lineHeight:1.4,
                   }}>{l}</button>
                 ))}
               </div>
             </div>
+          )}
 
-            <NumberInput label="How much do you pay per year? (₹)" value={ap} onChange={setAp} min={30000} prefix="₹" />
-            <Select label="For how many years do you pay?" value={ppt} onChange={v=>setPpt(Number(v))}
-              options={planOption==="flexi" ? flexiPPTOptions : extPPTOptions} />
-
-            {planOption === "extended" && (
-              <Select label="Policy Term (Total duration)" value={pt} onChange={v=>setPt(Number(v))} options={extPTOptions} />
-            )}
-
-            {planOption === "flexi" && (
-              <>
-                <Select label="How long do you want income after maturity?" value={incomePeriod} onChange={v=>setIncomePeriod(Number(v))}
-                  options={[10,15,20,25,30].map(v=>({value:v,label:`${v} years`}))} />
-                <Select label="Did you delay your income start? (Deferment)" value={deferment} onChange={v=>setDeferment(Number(v))}
-                  options={[...Array(maxDeferment+1)].map((_,i)=>({value:i,label:i===0?"No — income starts Year 1":`Yes — income starts Year ${i+1}`}))} />
-              </>
-            )}
-
-            <div style={{display:"flex", flexDirection:"column", gap:4}}>
-              <label style={{fontSize:12, fontWeight:600, color:C.grey600, textTransform:"uppercase", letterSpacing:"0.05em"}}>
-                Which year are you thinking of exiting? (1–{maxSurrenderYear-1})
-              </label>
-              <input type="range" min={1} max={maxSurrenderYear-1} value={safeYears}
-                onChange={e=>setYearsSurrender(Number(e.target.value))}
-                style={{accentColor:C.navy, marginTop:8}}
-              />
-              <div style={{display:"flex",justifyContent:"space-between"}}>
-                <span style={{fontSize:12,color:C.grey400}}>Year 1</span>
-                <span style={{fontSize:14,fontWeight:700,color:C.navy}}>Exiting at end of Year {safeYears}</span>
-                <span style={{fontSize:12,color:C.grey400}}>Year {maxSurrenderYear-1}</span>
-              </div>
+          {/* Q7 — Year of exit slider */}
+          <div style={{padding:"18px 22px"}}>
+            <div style={{fontSize:13, fontWeight:600, color:C.navy, marginBottom:4, textAlign:"left", lineHeight:1.4}}>
+              At the end of which year are you thinking of exiting?
             </div>
-
-            {planOption === "flexi" && (
-              <div style={{display:"flex", alignItems:"center", gap:10, padding:"10px 14px", background:C.navyPale, borderRadius:8}}>
-                <input type="checkbox" id="rop" checked={ropChosen} onChange={e=>setRopChosen(e.target.checked)}
-                  style={{width:16,height:16,accentColor:C.navy,cursor:"pointer"}} />
-                <label htmlFor="rop" style={{fontSize:13,fontWeight:600,color:C.navy,cursor:"pointer"}}>
-                  Did you opt for Premiums Back (RoP) at the start?
-                </label>
-              </div>
-            )}
+            <div style={{fontSize:12, color:C.grey400, marginBottom:12, textAlign:"left"}}>Drag to see how the numbers change</div>
+            <input type="range" min={1} max={maxSurrenderYear-1} value={safeYears}
+              onChange={e => setYearsSurrender(Number(e.target.value))}
+              style={{width:"100%", accentColor:C.navy, cursor:"pointer"}}
+            />
+            <div style={{display:"flex", justifyContent:"space-between", marginTop:6}}>
+              <span style={{fontSize:12, color:C.grey400}}>Year 1</span>
+              <span style={{
+                fontSize:14, fontWeight:700, color:C.white,
+                background:C.navy, padding:"3px 12px", borderRadius:99,
+              }}>Exiting end of Year {safeYears}</span>
+              <span style={{fontSize:12, color:C.grey400}}>Year {maxSurrenderYear-1}</span>
+            </div>
           </div>
-        </Card>
+
+        </div>
 
         {/* ── HERO: SURRENDER VALUE ─────────────────────────────────── */}
         <div style={{
